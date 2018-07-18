@@ -1,21 +1,20 @@
 package main
 
 import (
-	_"github.com/go-sql-driver/mysql"
-	"log"
-	"fmt"
-	"net/http"
-	"encoding/json"
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"log"
+	"net/http"
 )
 
 type location struct {
-	Tid int `json:"tid"`
-	Lat float64 `json:"Lat"`
+	Tid  int     `json:"tid"`
+	Lat  float64 `json:"Lat"`
 	Long float64 `json:"Long"`
-	T string `json:"t"`
+	T    string  `json:"t"`
 }
-
 
 func handler_GetLocationByID(w http.ResponseWriter, r *http.Request) {
 
@@ -32,13 +31,13 @@ func handler_GetLocationByID(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	a := location{}
 
-	rows, err_query := db.Query("select * from TRIPLOCATIONS where tid=?",tid_from_request)
+	rows, err_query := db.Query("select * from TRIPLOCATIONS where tid=?", tid_from_request)
 	if err_query != nil {
 		log.Fatal(err_query)
 	}
-	i := 0
+
 	for rows.Next() {
-		i+=1;
+
 		err := rows.Scan(&a.Tid, &a.Lat, &a.Long, &a.T)
 		if err != nil {
 			log.Fatal(err)
@@ -46,7 +45,7 @@ func handler_GetLocationByID(w http.ResponseWriter, r *http.Request) {
 		sLat := fmt.Sprintf("%f", a.Lat)
 		sLong := fmt.Sprintf("%f", a.Long)
 
-		s := string("TID: "+tid_from_request)+" "+sLat+" "+sLong+" "+a.T
+		s := string("TID: " + tid_from_request + " " + sLat + " " + sLong + " " + a.T)
 
 		res := s
 		json.NewEncoder(w).Encode(res)
@@ -63,10 +62,10 @@ func handler_UpdateLocationByID(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	var a location
-	if err :=decoder.Decode(&a);err!=nil{
+	if err := decoder.Decode(&a); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%+v",a)
+	fmt.Printf("%+v", a)
 
 	db, err_connection := sql.Open("mysql", "user1:123@tcp(127.0.0.1:3306)/test")
 	if err_connection != nil {
@@ -74,13 +73,12 @@ func handler_UpdateLocationByID(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error")
 	}
 	defer db.Close()
-	_, err_query := db.Query("insert into TRIPLOCATIONS VALUES (?,?,?,?)",a.Tid,a.Lat,a.Long,a.T)
+	_, err_query := db.Query("insert into TRIPLOCATIONS VALUES (?,?,?,?)", a.Tid, a.Lat, a.Long, a.T)
 	if err_query != nil {
 		log.Fatal(err_query)
 	}
 
 }
-
 
 func main() {
 
